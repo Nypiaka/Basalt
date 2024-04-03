@@ -49,21 +49,29 @@ public class PackagesService {
         }
         var resultPair = getDifferences(Objects.requireNonNull(firstPackages.getBody()).getPackages(),
                 Objects.requireNonNull(secondPackages.getBody()).getPackages());
+        System.out.println("_".repeat(10) + "Packages that are in the first branch, but not in the second"
+                + "_".repeat(10));
         resultPair.getKey().stream().map(this::toJson).forEach(
                 System.out::println
         );
+        System.out.println("_".repeat(10) + "Packages that are in the second branch, but not in the first"
+                + "_".repeat(10));
         resultPair.getValue().stream().map(this::toJson).forEach(
                 System.out::println
         );
         var fstMap = firstPackages.getBody().getPackages().stream().collect(Collectors.toMap(
-                PackageDto::getName, dto -> dto.getVersion() + "-" + dto.getRelease()
+                PackageDto::getName, dto -> Map.entry(dto.getVersion() + "-" + dto.getRelease(), dto)
         ));
         var sndMap = secondPackages.getBody().getPackages().stream().collect(Collectors.toMap(
-                PackageDto::getName, dto -> dto.getVersion() + "-" + dto.getRelease()
+                PackageDto::getName, dto -> Map.entry(dto.getVersion() + "-" + dto.getRelease(), dto)
         ));
+        System.out.println("_".repeat(7) + "Packages with more version-releases in the first than in the second"
+                + "_".repeat(6));
         for (var name : fstMap.keySet()) {
-            if (sndMap.containsKey(name) && fstMap.get(name).compareTo(sndMap.get(name)) > 0) {
-                System.out.println(name + ", " + fstMap.get(name) + ", " + sndMap.get(name));
+            if (sndMap.containsKey(name) && fstMap.get(name).getKey().compareTo(sndMap.get(name).getKey()) > 0) {
+                System.out.println(name + ": ");
+                System.out.println(toJson(fstMap.get(name).getValue()));
+                System.out.println(toJson(sndMap.get(name).getValue()));
             }
         }
     }
